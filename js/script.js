@@ -6,6 +6,14 @@ jQuery(document).ready(function ($) {
         $submitButton.prop('disabled', !isChecked);
     });
 
+    $(window).on('scroll', function(e){
+        if($(window).scrollTop() >= 400){
+            $('.header').addClass('fixed')
+        } else{
+            $('.header').removeClass('fixed')
+        }
+    })
+
     // ДЛЯ ОТКРЫТИЯ МОДАЛКИ
     function openModalOrMenu(trigger, targetSelector) {
         $(trigger).addClass('active');
@@ -144,34 +152,59 @@ createTabs('.choose__select', '.choose__container')
 
 // ДЛЯ ОТОБРАЖЕНИЯ КАРТЫ
 function init() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
+    const coordsList = mapElement.dataset.coords.split('|').map(coordStr => coordStr.split(',').map(Number));
+    const addresses = mapElement.dataset.address.split('|');
+
     let myMap = new ymaps.Map('map', {
-        center: [52.267675, 104.329717],
+        center: coordsList[0],
         zoom: 15,
         controls: []
     }, {
         searchControlProvider: 'yandex#search'
     });
-    myplacemark = new ymaps.GeoObject({
-        geometry: {
-            type: "Point",
-            coordinates: [52.267675, 104.329717]
-        },
-        properties: {
-            hintContent: 'Красноказачья улица, 131, Иркутск'
-        }
+
+    // Add GeoObjects for each coordinate
+    coordsList.forEach((coords, index) => {
+        const hintContent = addresses[index] || `Location ${index + 1}`;
+        const placemark = new ymaps.GeoObject({
+            geometry: {
+                type: "Point",
+                coordinates: coords
+            },
+            properties: {
+                hintContent: hintContent
+            }
+        });
+        myMap.geoObjects.add(placemark);
     });
+
+    // Disable scroll zoom and add controls
     myMap.behaviors.disable('scrollZoom');
     myMap.controls.add('zoomControl');
-    myMap.controls.add('rulerControl', {
-        scaleLine: false
+    myMap.controls.add('rulerControl', { scaleLine: false });
+
+    // Handle window resizing
+    const resizeMap = () => myMap.container.fitToViewport();
+    window.addEventListener('resize', resizeMap);
+
+    // Clean up resize event listener when the map is destroyed
+    const observer = new MutationObserver(() => {
+        if (!document.contains(mapElement)) {
+            window.removeEventListener('resize', resizeMap);
+            observer.disconnect();
+        }
     });
-    myMap.geoObjects.add(myplacemark);
+    observer.observe(document.body, { childList: true, subtree: true });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    let mapElement = document.getElementById('map');
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
 
-    let observer = new IntersectionObserver(function (entries, observer) {
+    const observer = new IntersectionObserver(function (entries, observer) {
         entries.forEach(function (entry) {
             if (entry.isIntersecting) {
                 ymaps.ready(init);
@@ -182,9 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
         threshold: 0.1
     });
 
-    if (mapElement) {
-        observer.observe(mapElement);
-    }
+    observer.observe(mapElement);
 });
 
 // SWIPER слайдеры
@@ -253,4 +284,8 @@ const reviewsSlider = new Swiper('.reviews__slider', {
             slidesPerView: 3,
         },
     }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    Marquee3k.init();
 });

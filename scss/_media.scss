@@ -393,10 +393,18 @@
         &__wrap {
             height: 400px;
 
-            &::after {
-                height: 70px;
-                width: 70px;
+            &::before {
+                height: 60px;
+                width: 60px;
             }
+
+            &::after{
+                width: 103%;
+            }
+        }
+
+        &__img{
+            border-radius: 24px;
         }
 
         &__pic {
@@ -553,6 +561,13 @@
         padding: 0 20px;
     }
 
+    .footer{
+        &__wrap{
+            width: 95%;
+            margin: auto;
+        }
+    }
+
     .modal {
         &__inner {
             display: flex;
@@ -703,8 +718,16 @@
     }
 
     .welcome {
-        padding-bottom: 350px;
         padding-top: 50px;
+        &__item{
+            padding: 0 25px;
+            font-size: 30px;
+        }
+
+        &__wraps:first-child{
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+        }
 
         &__view {
             position: relative;
